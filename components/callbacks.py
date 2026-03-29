@@ -117,9 +117,16 @@ def register_callbacks(app, df: pd.DataFrame) -> None:
         Output("medals-by-country", "figure"),
         Output("medals-by-year", "figure"),
         Input("medals-year-range", "value"),
+        Input("medals-medal-type", "value"),
+        Input("medals-season", "value"),
         Input("medals-top-n", "value"),
     )
-    def update_medals(year_range: list[int], top_n: int):
+    def update_medals(
+        year_range: list[int],
+        medal_type: str,
+        season_value: str,
+        top_n: int,
+    ):
         if not has_columns(df, ["Medal", "NOC", "Year"]):
             return (
                 empty_figure("Required medal columns not found"),
@@ -130,6 +137,10 @@ def register_callbacks(app, df: pd.DataFrame) -> None:
         medal_df = medal_df[
             (medal_df["Year"] >= year_range[0]) & (medal_df["Year"] <= year_range[1])
         ]
+        if medal_type != "ALL":
+            medal_df = medal_df[medal_df["Medal"] == medal_type]
+        if season_value != "ALL" and "Season" in medal_df.columns:
+            medal_df = medal_df[medal_df["Season"] == season_value]
 
         if medal_df.empty:
             return (

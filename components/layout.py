@@ -139,6 +139,10 @@ def demographics_container(df: pd.DataFrame) -> dbc.Container:
 def medals_container(df: pd.DataFrame) -> dbc.Container:
     year_min = int(df["Year"].min()) if "Year" in df.columns else 1896
     year_max = int(df["Year"].max()) if "Year" in df.columns else 2016
+    season_options = [{"label": "All", "value": "ALL"}]
+    if "Season" in df.columns:
+        seasons = sorted(df["Season"].dropna().astype(str).unique().tolist())
+        season_options.extend({"label": season, "value": season} for season in seasons)
 
     return dbc.Container(
         [
@@ -153,10 +157,41 @@ def medals_container(df: pd.DataFrame) -> dbc.Container:
                                 max=year_max,
                                 value=[year_min, year_max],
                                 step=1,
+                                marks={year_min: str(year_min), year_max: str(year_max)},
+                                updatemode="mouseup",
                                 tooltip={"placement": "bottom", "always_visible": False},
                             ),
                         ],
-                        md=8,
+                        md=6,
+                    ),
+                    dbc.Col(
+                        [
+                            html.Label("Medal Type"),
+                            dcc.Dropdown(
+                                id="medals-medal-type",
+                                options=[
+                                    {"label": "All", "value": "ALL"},
+                                    {"label": "Gold", "value": "Gold"},
+                                    {"label": "Silver", "value": "Silver"},
+                                    {"label": "Bronze", "value": "Bronze"},
+                                ],
+                                value="ALL",
+                                clearable=False,
+                            ),
+                        ],
+                        md=2,
+                    ),
+                    dbc.Col(
+                        [
+                            html.Label("Season"),
+                            dcc.Dropdown(
+                                id="medals-season",
+                                options=season_options,
+                                value="ALL",
+                                clearable=False,
+                            ),
+                        ],
+                        md=2,
                     ),
                     dbc.Col(
                         [
@@ -172,7 +207,7 @@ def medals_container(df: pd.DataFrame) -> dbc.Container:
                                 clearable=False,
                             ),
                         ],
-                        md=4,
+                        md=2,
                     ),
                 ],
                 className="mb-4",
