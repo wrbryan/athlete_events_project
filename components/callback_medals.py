@@ -12,17 +12,25 @@ def register_medals_callbacks(app, df: pd.DataFrame) -> None:
     @app.callback(
         Output("medals-by-country", "figure"),
         Output("medals-by-year", "figure"),
+        Input("analysis-tabs", "value"),
         Input("medals-year-range", "value"),
         Input("medals-medal-type", "value"),
         Input("medals-season", "value"),
         Input("medals-top-n", "value"),
     )
     def update_medals(
+        active_tab: str,
         year_range: list[int],
         medal_type: str,
         season_value: str,
         top_n: int,
     ):
+        if active_tab != "medals":
+            return (
+                empty_figure("Open Medals tab to load chart"),
+                empty_figure("Open Medals tab to load chart"),
+            )
+
         if not has_columns(df, ["Medal", "NOC", "Year"]):
             return (
                 empty_figure("Required medal columns not found"),

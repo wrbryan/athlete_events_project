@@ -224,16 +224,23 @@ def medals_container(df: pd.DataFrame) -> dbc.Container:
 
 
 def explorer_container(df: pd.DataFrame) -> dbc.Container:
-    numeric_columns = [col for col in df.columns if pd.api.types.is_numeric_dtype(df[col])]
-    categorical_columns = [col for col in df.columns if col not in numeric_columns]
+    explorer_columns = [col for col in df.columns if col != "ID"]
+    numeric_columns = [col for col in explorer_columns if pd.api.types.is_numeric_dtype(df[col])]
+    categorical_columns = [col for col in explorer_columns if col not in numeric_columns]
+    max_color_levels = 12
+    color_columns = [
+        col
+        for col in explorer_columns
+        if int(df[col].nunique(dropna=True)) <= max_color_levels
+    ]
 
-    x_default = numeric_columns[0] if numeric_columns else df.columns[0]
+    x_default = numeric_columns[0] if numeric_columns else explorer_columns[0]
     y_default = (
         numeric_columns[1]
         if len(numeric_columns) > 1
         else (numeric_columns[0] if numeric_columns else None)
     )
-    color_default = categorical_columns[0] if categorical_columns else ""
+    color_default = categorical_columns[0] if categorical_columns and categorical_columns[0] in color_columns else ""
 
     return dbc.Container(
         [
@@ -244,7 +251,7 @@ def explorer_container(df: pd.DataFrame) -> dbc.Container:
                             html.Label("X column"),
                             dcc.Dropdown(
                                 id="explorer-x-column",
-                                options=[{"label": c, "value": c} for c in df.columns],
+                                options=[{"label": c, "value": c} for c in explorer_columns],
                                 value=x_default,
                                 clearable=False,
                             ),
@@ -269,7 +276,7 @@ def explorer_container(df: pd.DataFrame) -> dbc.Container:
                             html.Label("Color column"),
                             dcc.Dropdown(
                                 id="explorer-color-column",
-                                options=[{"label": "None", "value": ""}] + [{"label": c, "value": c} for c in df.columns],
+                                options=[{"label": "None", "value": ""}] + [{"label": c, "value": c} for c in color_columns],
                                 value=color_default,
                                 clearable=False,
                             ),
@@ -282,8 +289,10 @@ def explorer_container(df: pd.DataFrame) -> dbc.Container:
                             dcc.Dropdown(
                                 id="explorer-chart-type",
                                 options=[
-                                    {"label": "Histogram", "value": "histogram"},
-                                    {"label": "Bar (counts)", "value": "bar"},
+                                    {"label": "Histogram (counts)", "value": "histogram"},
+                                    {"label": "Bar (auto: avg Y or counts)", "value": "bar"},
+                                    {"label": "Bar (sum of Y)", "value": "bar_sum"},
+                                    {"label": "Bar (average of Y)", "value": "bar_avg"},
                                     {"label": "Scatter", "value": "scatter"},
                                     {"label": "Box", "value": "box"},
                                 ],
@@ -299,8 +308,8 @@ def explorer_container(df: pd.DataFrame) -> dbc.Container:
             dcc.Graph(id="explorer-main-chart"),
             html.H4("Data Preview", className="mt-4"),
             dash_table.DataTable(
-                data=df.head(20).to_dict("records"),
-                columns=[{"name": c, "id": c} for c in df.columns],
+                data=df[explorer_columns].head(20).to_dict("records"),
+                columns=[{"name": c, "id": c} for c in explorer_columns],
                 page_size=10,
                 style_table={"overflowX": "auto"},
                 style_cell={

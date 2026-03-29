@@ -12,10 +12,17 @@ def register_demographics_callbacks(app, df: pd.DataFrame) -> None:
     @app.callback(
         Output("demographics-age-distribution", "figure"),
         Output("demographics-height-weight", "figure"),
+        Input("analysis-tabs", "value"),
         Input("demographics-sex", "value"),
         Input("demographics-season", "value"),
     )
-    def update_demographics(sex_value: str, season_value: str):
+    def update_demographics(active_tab: str, sex_value: str, season_value: str):
+        if active_tab != "demographics":
+            return (
+                empty_figure("Open Demographics tab to load chart"),
+                empty_figure("Open Demographics tab to load chart"),
+            )
+
         filtered = df.copy()
         if sex_value != "ALL" and "Sex" in filtered.columns:
             filtered = filtered[filtered["Sex"] == sex_value]
@@ -37,13 +44,16 @@ def register_demographics_callbacks(app, df: pd.DataFrame) -> None:
             age_fig = empty_figure("Age column not found")
 
         if has_columns(filtered, ["Height", "Weight"]):
-            hw = filtered[["Height", "Weight"]].dropna()
+            scatter_cols = ["Height", "Weight"] + (["Sex"] if "Sex" in filtered.columns else [])
+            hw = filtered[scatter_cols].dropna(subset=["Height", "Weight"])
             if hw.empty:
                 hw_fig = empty_figure("No Height/Weight data for selected filters")
             else:
                 scatter_color = "Sex" if "Sex" in filtered.columns else None
+                if len(hw) > 20000:
+                    hw = hw.sample(n=20000, random_state=42)
                 hw_fig = px.scatter(
-                    filtered,
+                    hw,
                     x="Height",
                     y="Weight",
                     color=scatter_color,
