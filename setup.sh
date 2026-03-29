@@ -41,4 +41,4 @@ echo
 echo "Setup complete."
 echo "Run the app with:"
 echo "  source .venv/bin/activate"
-echo "  python app.py"
+echo "  python athlete_events.py"
