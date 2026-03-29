@@ -318,7 +318,7 @@ def build_layout(df: pd.DataFrame, title: str, csv_path: str) -> dbc.Container:
     return dbc.Container(
         [
             html.H1(title, className="mt-4 mb-1 dashboard-title"),
-            html.P(f"Source CSV: {Path(csv_path).resolve()}", className="text-muted"),
+            html.P(f"Source CSV: {Path(csv_path).name}", className="text-muted"),
             dcc.Tabs(
                 id="analysis-tabs",
                 value="overview",
