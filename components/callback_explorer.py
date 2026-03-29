@@ -6,7 +6,7 @@ from dash import Input, Output
 
 from components.callback_common import empty_figure
 
-SCATTER_MAX_POINTS = 5000
+SCATTER_MAX_POINTS = 3000
 BOX_MAX_CATEGORIES = 12
 MAX_COLOR_LEVELS = 40
 MAX_COLOR_LEVELS_HEAVY = 12
@@ -166,6 +166,7 @@ def register_explorer_callbacks(app, df: pd.DataFrame) -> None:
                     x=x_col,
                     y=y_col,
                     color=selected_color,
+                    render_mode="webgl",
                     title=f"{y_col} vs {x_col}",
                 )
 

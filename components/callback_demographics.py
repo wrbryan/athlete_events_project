@@ -8,6 +8,9 @@ from components.callback_common import empty_figure
 from components.layout import has_columns
 
 
+DEMOGRAPHICS_SCATTER_MAX_POINTS = 8000
+
+
 def register_demographics_callbacks(app, df: pd.DataFrame) -> None:
     @app.callback(
         Output("demographics-age-distribution", "figure"),
@@ -50,13 +53,14 @@ def register_demographics_callbacks(app, df: pd.DataFrame) -> None:
                 hw_fig = empty_figure("No Height/Weight data for selected filters")
             else:
                 scatter_color = "Sex" if "Sex" in filtered.columns else None
-                if len(hw) > 20000:
-                    hw = hw.sample(n=20000, random_state=42)
+                if len(hw) > DEMOGRAPHICS_SCATTER_MAX_POINTS:
+                    hw = hw.sample(n=DEMOGRAPHICS_SCATTER_MAX_POINTS, random_state=42)
                 hw_fig = px.scatter(
                     hw,
                     x="Height",
                     y="Weight",
                     color=scatter_color,
+                    render_mode="webgl",
                     title="Height vs Weight",
                 )
         else:

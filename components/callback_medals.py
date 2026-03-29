@@ -9,6 +9,10 @@ from components.layout import has_columns
 
 
 def register_medals_callbacks(app, df: pd.DataFrame) -> None:
+    medal_base_df = None
+    if has_columns(df, ["Medal", "NOC", "Year"]):
+        medal_base_df = df[df["Medal"].notna()].copy()
+
     @app.callback(
         Output("medals-by-country", "figure"),
         Output("medals-by-year", "figure"),
@@ -31,13 +35,13 @@ def register_medals_callbacks(app, df: pd.DataFrame) -> None:
                 empty_figure("Open Medals tab to load chart"),
             )
 
-        if not has_columns(df, ["Medal", "NOC", "Year"]):
+        if medal_base_df is None:
             return (
                 empty_figure("Required medal columns not found"),
                 empty_figure("Required medal columns not found"),
             )
 
-        medal_df = df[df["Medal"].notna()].copy()
+        medal_df = medal_base_df
         medal_df = medal_df[
             (medal_df["Year"] >= year_range[0]) & (medal_df["Year"] <= year_range[1])
         ]

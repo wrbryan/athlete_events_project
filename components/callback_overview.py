@@ -9,19 +9,33 @@ from components.layout import has_columns
 
 
 def register_overview_callbacks(app, df: pd.DataFrame) -> None:
+    yearly = None
+    sports = None
+
+    if has_columns(df, ["Year"]):
+        yearly = (
+            df.groupby("Year")
+            .size()
+            .reset_index(name="Entries")
+            .sort_values("Year")
+        )
+
+    if has_columns(df, ["Sport"]):
+        sports = (
+            df.groupby("Sport")
+            .size()
+            .reset_index(name="Entries")
+            .sort_values("Entries", ascending=False)
+            .head(15)
+        )
+
     @app.callback(
         Output("overview-events-by-year", "figure"),
         Output("overview-top-sports", "figure"),
         Input("overview-events-by-year", "id"),
     )
     def update_overview(_: str):
-        if has_columns(df, ["Year"]):
-            yearly = (
-                df.groupby("Year")
-                .size()
-                .reset_index(name="Entries")
-                .sort_values("Year")
-            )
+        if yearly is not None:
             fig_year = px.line(
                 yearly,
                 x="Year",
@@ -31,14 +45,7 @@ def register_overview_callbacks(app, df: pd.DataFrame) -> None:
         else:
             fig_year = empty_figure("Year column not found")
 
-        if has_columns(df, ["Sport"]):
-            sports = (
-                df.groupby("Sport")
-                .size()
-                .reset_index(name="Entries")
-                .sort_values("Entries", ascending=False)
-                .head(15)
-            )
+        if sports is not None:
             fig_sport = px.bar(sports, x="Sport", y="Entries", title="Top Sports")
             fig_sport.update_layout(xaxis_tickangle=-35)
         else:
