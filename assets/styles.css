@@ -1,0 +1,12 @@
+.main-shell {
+  padding-bottom: 2rem;
+}
+
+.dashboard-title {
+  letter-spacing: 0.01em;
+}
+
+.dash-table-container .dash-spreadsheet-container .dash-spreadsheet-inner td,
+.dash-table-container .dash-spreadsheet-container .dash-spreadsheet-inner th {
+  line-height: 1.2;
+}
