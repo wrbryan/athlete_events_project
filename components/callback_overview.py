@@ -12,7 +12,7 @@ def register_overview_callbacks(app, df: pd.DataFrame) -> None:
     @app.callback(
         Output("overview-events-by-year", "figure"),
         Output("overview-top-sports", "figure"),
-        Input("analysis-tabs", "value"),
+        Input("overview-events-by-year", "id"),
     )
     def update_overview(_: str):
         if has_columns(df, ["Year"]):

@@ -31,7 +31,36 @@ def parse_args() -> argparse.Namespace:
         default=8050,
         help="Port for the Dash app. Defaults to 8050.",
     )
+    parser.add_argument(
+        "--debug",
+        action="store_true",
+        help="Enable Dash debug mode. Off by default for stability/performance.",
+    )
     return parser.parse_args()
+
+
+def optimize_dtypes(df: pd.DataFrame) -> pd.DataFrame:
+    category_columns = [
+        "Sex",
+        "Team",
+        "NOC",
+        "Games",
+        "Season",
+        "City",
+        "Sport",
+        "Event",
+        "Medal",
+    ]
+    for col in category_columns:
+        if col in df.columns and df[col].dtype == "object":
+            df[col] = df[col].astype("category")
+
+    for col in df.select_dtypes(include=["int64"]).columns:
+        df[col] = pd.to_numeric(df[col], downcast="integer")
+    for col in df.select_dtypes(include=["float64"]).columns:
+        df[col] = pd.to_numeric(df[col], downcast="float")
+
+    return df
 
 
 def load_csv(path: str) -> pd.DataFrame:
@@ -48,7 +77,7 @@ def load_csv(path: str) -> pd.DataFrame:
             if converted.notna().sum() >= int(0.9 * max(len(df), 1)):
                 df[col] = converted
 
-    return df
+    return optimize_dtypes(df)
 
 
 def build_app(df: pd.DataFrame, title: str, csv_path: str) -> Dash:
@@ -72,7 +101,7 @@ def main() -> None:
     args = parse_args()
     df = load_csv(args.csv)
     app = build_app(df, args.title, args.csv)
-    app.run(debug=True, port=args.port)
+    app.run(debug=args.debug, port=args.port)
 
 
 if __name__ == "__main__":
